@@ -1,0 +1,5 @@
+{
+  "modmenu.nameTranslation.herdinstinct": "Herd Instinct",
+  "modmenu.summaryTranslation.herdinstinct": "Nearby herd animals panic when one of them is hurt or killed.",
+  "modmenu.descriptionTranslation.herdinstinct": "Makes nearby configured passive mobs panic together when one of them is attacked by a player or killed, with behaviour controlled through the in-game config screen."
+}
