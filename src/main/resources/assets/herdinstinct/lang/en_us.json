@@ -1,0 +1,13 @@
+{
+  "itemGroup.herdinstinct": "Herd Instinct",
+  "block.herdinstinct.example_block": "Example Block",
+  "item.herdinstinct.example_item": "Example Item",
+
+  "herdinstinct.configuration.title": "Herd Instinct Configs",
+  "herdinstinct.configuration.section.herdinstinct.common.toml": "Herd Instinct Configs",
+  "herdinstinct.configuration.section.herdinstinct.common.toml.title": "Herd Instinct Configs",
+  "herdinstinct.configuration.items": "Item List",
+  "herdinstinct.configuration.logDirtBlock": "Log Dirt Block",
+  "herdinstinct.configuration.magicNumberIntroduction": "Magic Number Text",
+  "herdinstinct.configuration.magicNumber": "Magic Number"
+}
