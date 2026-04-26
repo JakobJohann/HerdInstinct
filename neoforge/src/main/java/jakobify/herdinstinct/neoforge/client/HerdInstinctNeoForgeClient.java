@@ -1,19 +1,14 @@
-package jakobify.herdinstinct;
+package jakobify.herdinstinct.neoforge.client;
 
-import net.neoforged.api.distmarker.Dist;
+import jakobify.herdinstinct.HerdInstinctConfigScreen;
 import net.neoforged.fml.ModLoadingContext;
-import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
-public final class HerdInstinctClient {
-    private HerdInstinctClient() {
+public final class HerdInstinctNeoForgeClient {
+    private HerdInstinctNeoForgeClient() {
     }
 
     public static void registerConfigScreen() {
-        if (FMLEnvironment.dist != Dist.CLIENT) {
-            return;
-        }
-
         ModLoadingContext.get().registerExtensionPoint(
                 IConfigScreenFactory.class,
                 () -> (client, parent) -> HerdInstinctConfigScreen.create(parent)

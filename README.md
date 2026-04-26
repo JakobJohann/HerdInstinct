@@ -1,25 +1,25 @@
+# Herd Instinct
 
-Installation information
-=======
+Architectury multi-loader setup for Minecraft `1.21.1` with:
 
-This template repository can be directly cloned to get you started with a new
-mod. Simply create a new repository cloned from this one, by following the
-instructions provided by [GitHub](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
+- `common` shared gameplay and config code
+- `fabric` Fabric loader implementation
+- `neoforge` NeoForge loader implementation
+- Parchment mappings layered on Mojang mappings
 
-Once you have your clone, simply open the repository in the IDE of your choice. The usual recommendation for an IDE is either IntelliJ IDEA or Eclipse.
+## Build
 
-If at any point you are missing libraries in your IDE, or you've run into problems you can
-run `gradlew --refresh-dependencies` to refresh the local cache. `gradlew clean` to reset everything 
-{this does not affect your code} and then start the process again.
+```powershell
+.\gradlew build
+```
 
-Mapping Names:
-============
-By default, the MDK is configured to use the official mapping names from Mojang for methods and fields 
-in the Minecraft codebase. These names are covered by a specific license. All modders should be aware of this
-license. For the latest license text, refer to the mapping file itself, or the reference copy here:
-https://github.com/NeoForged/NeoForm/blob/main/Mojang.md
+Loader-specific jars are produced in:
 
-Additional Resources: 
-==========
-Community Documentation: https://docs.neoforged.net/  
-NeoForged Discord: https://discord.neoforged.net/
+- `fabric/build/libs`
+- `neoforge/build/libs`
+
+## Notes
+
+- Shared herd panic logic lives in `common`.
+- Loader event registration is isolated to the platform modules.
+- Fabric integrates the config screen through Mod Menu when it is present.

@@ -1,10 +1,12 @@
 package jakobify.herdinstinct;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.UUID;
 
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.PathfinderMob;
@@ -13,18 +15,28 @@ import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 public final class HerdPanicUtil {
-    private static final String PANIC_UNTIL_KEY = HerdInstinct.MODID + "_panic_until";
-    private static final Map<Integer, PanicState> ACTIVE_PANIC = new ConcurrentHashMap<>();
+    private static final Map<UUID, Long> PANIC_UNTIL = new HashMap<>();
+    private static final Map<UUID, PanicState> ACTIVE_PANIC = new HashMap<>();
     private static final int PANIC_UPDATE_INTERVAL_TICKS = 10;
 
     private HerdPanicUtil() {
     }
 
     public static boolean isOnCooldown(Animal animal, long currentGameTime) {
-        return currentGameTime < animal.getPersistentData().getLong(PANIC_UNTIL_KEY);
+        Long panicUntil = PANIC_UNTIL.get(animal.getUUID());
+        if (panicUntil == null) {
+            return false;
+        }
+
+        if (currentGameTime >= panicUntil) {
+            PANIC_UNTIL.remove(animal.getUUID());
+            ACTIVE_PANIC.remove(animal.getUUID());
+            return false;
+        }
+
+        return true;
     }
 
     public static void applyPanic(Animal animal, Vec3 threatPosition, double panicSpeed, double panicDistance, int cooldownTicks, long currentGameTime) {
@@ -33,20 +45,13 @@ public final class HerdPanicUtil {
         }
 
         long panicUntil = currentGameTime + cooldownTicks;
-        HerdInstinct.LOGGER.info(
-                "HerdInstinct panic applied: entity={}, uuid={}, pos={}, threat={}, untilTick={}",
-                animal.getType(),
-                animal.getUUID(),
-                animal.blockPosition(),
-                threatPosition,
-                panicUntil
-        );
-        animal.getPersistentData().putLong(PANIC_UNTIL_KEY, panicUntil);
+        UUID entityUuid = animal.getUUID();
+        PANIC_UNTIL.put(entityUuid, panicUntil);
         animal.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
         animal.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
 
-        ACTIVE_PANIC.put(animal.getId(), new PanicState(
-                animal.getUUID(),
+        ACTIVE_PANIC.put(entityUuid, new PanicState(
+                entityUuid,
                 animal.level().dimension(),
                 threatPosition,
                 panicSpeed,
@@ -56,18 +61,20 @@ public final class HerdPanicUtil {
         updatePanicPath(mob, threatPosition, panicSpeed, panicDistance);
     }
 
-    public static void tickActivePanics(ServerTickEvent.Post event) {
-        Iterator<Map.Entry<Integer, PanicState>> iterator = ACTIVE_PANIC.entrySet().iterator();
+    public static void tickActivePanics(MinecraftServer server) {
+        Iterator<Map.Entry<UUID, PanicState>> iterator = ACTIVE_PANIC.entrySet().iterator();
         while (iterator.hasNext()) {
             PanicState state = iterator.next().getValue();
-            ServerLevel level = event.getServer().getLevel(state.dimension());
+            ServerLevel level = server.getLevel(state.dimension());
             if (level == null) {
+                PANIC_UNTIL.remove(state.entityUuid());
                 iterator.remove();
                 continue;
             }
 
             Entity entity = level.getEntity(state.entityUuid());
             if (!(entity instanceof PathfinderMob mob) || !(entity instanceof Animal animal) || !animal.isAlive()) {
+                PANIC_UNTIL.remove(state.entityUuid());
                 iterator.remove();
                 continue;
             }
@@ -87,17 +94,8 @@ public final class HerdPanicUtil {
     private static void updatePanicPath(PathfinderMob mob, Vec3 threatPosition, double panicSpeed, double panicDistance) {
         Vec3 fleeTarget = findFleeTarget(mob, threatPosition, panicDistance);
         if (fleeTarget != null) {
-            boolean started = mob.getNavigation().moveTo(fleeTarget.x, fleeTarget.y, fleeTarget.z, panicSpeed);
+            mob.getNavigation().moveTo(fleeTarget.x, fleeTarget.y, fleeTarget.z, panicSpeed);
             mob.getMoveControl().setWantedPosition(fleeTarget.x, fleeTarget.y, fleeTarget.z, panicSpeed);
-            if (!started) {
-                HerdInstinct.LOGGER.info(
-                        "HerdInstinct panic fallback move: entity={}, from={}, threat={}, target={}",
-                        mob.getType(),
-                        mob.blockPosition(),
-                        threatPosition,
-                        fleeTarget
-                );
-            }
         }
     }
 
@@ -117,7 +115,7 @@ public final class HerdPanicUtil {
     private static void stopPanic(PathfinderMob mob, Animal animal) {
         mob.getNavigation().stop();
         mob.getMoveControl().setWantedPosition(mob.getX(), mob.getY(), mob.getZ(), 0.0D);
-        animal.getPersistentData().remove(PANIC_UNTIL_KEY);
+        PANIC_UNTIL.remove(animal.getUUID());
     }
 
     private record PanicState(

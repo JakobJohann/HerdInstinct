@@ -1,0 +1,25 @@
+architectury {
+    common('fabric', 'neoforge')
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDir('src/generated/resources')
+        }
+    }
+}
+
+dependencies {
+    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    modCompileOnly "dev.isxander:yet-another-config-lib:${rootProject.yacl_fabric_version}"
+}
+
+publishing {
+    publications {
+        register('mavenCommon', MavenPublication) {
+            artifactId = project.base.archivesName.get()
+            from components.java
+        }
+    }
+}
