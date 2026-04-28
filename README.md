@@ -1,25 +1,8 @@
-# Herd Instinct
+## Description
+**Herds Instinct** is a simple mod that makes passive animals behave as a **herd**. When one animal is attacked, nearby herd members **panic** and run away. The mod is highly configurable via [YACL](https://modrinth.com/mod/yacl) and therefore requires it.
 
-Architectury multi-loader setup for Minecraft `1.21.1` with:
+## Updates
+I also plan to add a **optional** feature where animals explore the world together as **herds**, possibly with a herd **leader**. 
 
-- `common` shared gameplay and config code
-- `fabric` Fabric loader implementation
-- `neoforge` NeoForge loader implementation
-- Parchment mappings layered on Mojang mappings
-
-## Build
-
-```powershell
-.\gradlew build
-```
-
-Loader-specific jars are produced in:
-
-- `fabric/build/libs`
-- `neoforge/build/libs`
-
-## Notes
-
-- Shared herd panic logic lives in `common`.
-- Loader event registration is isolated to the platform modules.
-- Fabric integrates the config screen through Mod Menu when it is present.
+## Info
+This mod is a **modern**, **configurable**, and **actively developed** mod with **NeoForge** and **Fabric** support, and it supports new versions of Minecraft. It's inspired by [HerdsPanic](https://modrinth.com/mod/herdspanic) by [Globox1997](https://modrinth.com/user/Globox1997), but built from scratch.
